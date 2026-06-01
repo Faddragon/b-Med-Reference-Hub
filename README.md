@@ -1,150 +1,102 @@
-# b-Med Reference Hub
+# b-Med Reference Hub 🧬
 
-CLI em Python para mapear e formatar referências biomédicas a partir do PubMed (via NCBI Entrez) ou de PDFs locais, com saída nos padrões **Vancouver** e **ABNT NBR 6023**.
+![GitHub repo size](https://img.shields.io/github/repo-size/Faddragon/b-Med-Reference-Hub)
+![GitHub top language](https://img.shields.io/github/languages/top/Faddragon/b-Med-Reference-Hub)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-## Funcionalidades
+> **Uma plataforma moderna (Web & CLI) para mapear e extrair referências biomédicas de PDFs e da API do PubMed, entregando citações prontas nos padrões Vancouver estrito e ABNT NBR 6023.**
 
-- Busca de metadados por **DOI**, **PMID** ou **título** na API do PubMed.
-- Busca por **título retorna top-5** com seleção interativa (antes pegava só o 1º).
-- **Cache SQLite** local com TTL de 24h para evitar chamadas repetidas à API.
-- **Rate limiter** embutido: 3 req/s sem API key, 10 req/s com API key.
-- **Retry automático** com backoff exponencial para HTTP 429/5xx e erros de rede.
-- Extração de **DOI** a partir de PDF local (PyMuPDF) e lookup automático.
-- Formatação de saída em **Vancouver** (estrito, com `doi:`) e **ABNT NBR 6023** (com `SOBRENOME, N.` e `Disponível em:`).
-- Arquivamento do PDF em `data/pdfs_armazenados/`.
+O **b-Med Reference Hub** foi projetado para economizar horas de formatação manual de médicos, pesquisadores e acadêmicos. Ele automatiza a extração de metadados e oferece uma interface web premium, rica e interativa, baseada nos conceitos de *Glassmorphism*.
 
-## Estrutura
+---
 
-```
-src/
-  main.py                      # CLI com seleção interativa
-  config.py                    # caminhos, credenciais Entrez, TTL, retry
-  formatador/
-    vancouver.py
-    abnt.py
-  motor_extracao/
-    pubmed_api.py              # esearch/efetch + cache + retry + rate limit
-    validador_doi.py           # regex para extrair DOI
-    pdf_handler.py             # leitura de PDF
-    retry.py                   # decorator com_retry, RateLimiter, exceções
-  db/
-    cache.py                   # SQLite com TTL
-  web/
-    app.py                     # Flask app (interface web)
-    templates/index.html
-    static/style.css
-    static/app.js
-tests/
-  test_formatadores.py
-  test_pubmed.py               # inclui cache, top-N, PMID
-  test_cache.py
-  test_retry.py
-  test_pdf_handler.py
-  test_web.py
-data/
-  cache.sqlite                 # cache local
-  pdfs_armazenados/            # PDFs arquivados
+## ✨ Principais Funcionalidades
+
+- **Múltiplas Formas de Busca:** Pesquise artigos instantaneamente através de DOI, PMID ou até mesmo Título (com suporte a busca top-5 interativa).
+- **Extração Inteligente de PDFs:** Envie um PDF local e a ferramenta usará o `PyMuPDF` para escanear as primeiras páginas, identificar o DOI de forma autônoma e cruzar com os dados oficiais do PubMed.
+- **Saídas Precisas (ABNT & Vancouver):** Formata os autores (incluindo caixa alta para ABNT), periódicos e inclusão automática de links rastreáveis do DOI.
+- **Interface Premium (Web App):** Desenhada em Vanilla CSS moderno com paletas em HSL, tipografia Google Fonts (Inter e Outfit) e micro-interações dinâmicas.
+- **Resiliência e Cache:** Rate limiter inteligente (até 10 req/s), cache em SQLite (TTL 24h) e sistema embutido de _Retry_ (Backoff Exponencial) para evitar bloqueios temporários.
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+- **Backend:** Python 3.10+, Flask, SQLite (para Cache/DB).
+- **Processamento:** BioPython (Entrez API) e PyMuPDF (Manipulação de Arquivos).
+- **Frontend Web:** HTML5 Semântico, Vanilla CSS (Glassmorphism), Vanilla JavaScript (Fetch API).
+- **Integrações Oficiais:** NCBI Entrez / PubMed API.
+
+---
+
+## 🚀 Como Rodar Localmente
+
+Certifique-se de ter o Python instalado na sua máquina.
+
+**1. Clone o repositório:**
+```bash
+git clone https://github.com/Faddragon/b-Med-Reference-Hub.git
+cd b-Med-Reference-Hub
 ```
 
-## Instalação
-
+**2. Crie e ative o ambiente virtual (Recomendado):**
 ```bash
 python -m venv .venv
-.venv\Scripts\activate          # Windows
-# source .venv/bin/activate     # Linux/macOS
+# Windows:
+.venv\Scripts\activate
+# Linux/Mac:
+source .venv/bin/activate
+```
+
+**3. Instale as dependências:**
+```bash
 pip install -r requirements.txt
 ```
 
-### Configuração do NCBI Entrez
-
-O NCBI exige um e-mail real e (opcionalmente) uma [API key](https://www.ncbi.nlm.nih.gov/account/settings/) para uso do Entrez. Defina via variáveis de ambiente:
-
-```bash
-# Windows PowerShell
-$env:BMED_ENTREZ_EMAIL = "voce@instituicao.edu"
-$env:BMED_ENTREZ_API_KEY = "sua_api_key_aqui"
-
-# Linux/macOS
-export BMED_ENTREZ_EMAIL="voce@instituicao.edu"
-export BMED_ENTREZ_API_KEY="sua_api_key_aqui"
-```
-
-Sem API key: 3 req/s. Com API key: 10 req/s.
-
-## Uso
-
-```bash
-python -m src.main
-```
-
-Menu interativo:
-
-```
-1. Buscar artigo por DOI         -> 10.1016/S0140-6736(23)00123-4
-2. Buscar artigo por Título      -> statins cardiovascular randomized
-3. Buscar artigo por PMID         -> 37812345
-4. Processar PDF local           -> C:/artigos/meu_paper.pdf
-0. Sair
-```
-
-Na opção 2, quando há múltiplos resultados, você vê a lista e escolhe:
-
-```
-Foram encontrados 5 artigos. Escolha um:
-  1. [37812345] Statins in primary prevention - Lancet, 2023
-  2. [37123456] Statins and cardiovascular outcomes - NEJM, 2022
-  ...
-Digite 1-5 (ou 0 para cancelar): >
-```
-
-## Interface web
-
+**4. Inicie o Servidor Web Premium:**
 ```bash
 python -m src.web.app
 ```
+Após executar, abra o navegador e acesse: `http://127.0.0.1:5000`
 
-Abre em <http://127.0.0.1:5000> com 4 abas (DOI, PMID, Título, PDF), botões de cópia para cada formato e fallback automático quando o PDF não tem DOI extraível.
+> **Nota:** Se preferir a experiência "Raiz" em linha de comando, basta rodar `python -m src.main`.
 
-## Exemplo de saída
+---
 
-**Vancouver**
+## ☁️ Como Hospedar (Deploy)
+
+Como o projeto utiliza bancos de dados locais (SQLite) e armazena PDFs no disco, recomenda-se hospedar em plataformas que suportem volumes persistentes.
+
+- **[Render](https://render.com/) (Recomendado):** Super fácil de conectar com o GitHub e suporta discos persistentes em planos pagos (o plano gratuito funciona perfeitamente para testes de front-end).
+- **[PythonAnywhere](https://www.pythonanywhere.com/):** A melhor opção para hospedar gratuitamente um script Python + SQLite de forma persistente.
+- **[Railway](https://railway.app/) ou [Fly.io](https://fly.io/):** Ideais para deploys modernos via Docker.
+
+---
+
+## ⚙️ Configurações (Opcional, mas recomendado)
+
+O PubMed exige um E-mail real para requisições seguras à API. Você pode exportar variáveis de ambiente para o terminal antes de rodar o app:
+
+```bash
+# Windows PowerShell
+$env:BMED_ENTREZ_EMAIL = "seu.email@instituicao.edu"
+$env:BMED_ENTREZ_API_KEY = "sua_api_key_do_pubmed"
+
+# Linux / MacOS
+export BMED_ENTREZ_EMAIL="seu.email@instituicao.edu"
+export BMED_ENTREZ_API_KEY="sua_api_key_do_pubmed"
 ```
-Doe J, Roe A, et al. A study of mock data. Journal of Tests. 2024;12(3):10-20. doi:10.1234/test.2024.001.
-```
+*(Se você fornecer uma API Key do NCBI, seu limite sobe de 3 para 10 requisições por segundo).*
 
-**ABNT**
-```
-DOE, J.; ROE, A., et al. A study of mock data. Journal of Tests, v. 12, n. 3, p. 10-20, 2024. Disponível em: https://doi.org/10.1234/test.2024.001.
-```
+---
 
-## Testes
+## 🧪 Rodando os Testes
+
+A aplicação possui excelente cobertura de testes (_offline mocking_) cobrindo formatadores, cache e limites de requisição.
 
 ```bash
 pytest
 ```
 
-**66 testes** rodando offline graças a mocks de `Entrez.esearch`, `Entrez.efetch`, `Entrez.read` e banco de cache isolado por `tmp_path`.
-
-## Tratamento de erros
-
-A camada `retry.py` define exceções específicas:
-
-- `PubMedError` — base
-- `PubMedRateLimited` — HTTP 429 mesmo após retries
-- `PubMedNetworkError` — DNS, timeout, conexão
-- `PubMedNotFound` — para uso futuro em chamadas sem resultado
-
-O CLI captura tudo e exibe mensagem amigável; o `com_retry` decorator lida com retries transparentemente (max 3, backoff 1s/2s/4s).
-
-## Limitações conhecidas
-
-- O **local de publicação** exigido pela ABNT para artigos impressos não é retornado pelo PubMed — só incluímos `Disponível em:` quando há DOI.
-- A camada `db/` original (placeholder `database.sqlite`) ainda não foi implementada — apenas `cache.sqlite` é usada.
-- O PDF handler lê no máximo 3 páginas para extrair DOI (heurística simples).
-
-## Variáveis de ambiente
-
-| Variável | Padrão | Descrição |
-|---|---|---|
-| `BMED_ENTREZ_EMAIL` | `seu_email_medico@exemplo.com` | E-mail exigido pelo NCBI |
-| `BMED_ENTREZ_API_KEY` | `""` | API key do NCBI (opcional, libera 10 req/s) |
+---
+*Feito para simplificar a pesquisa médica.* 🩺
