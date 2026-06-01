@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>b-Med Reference Hub</title>
+  
+  <!-- Google Fonts: Outfit (Headings) e Inter (Body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="bg-shape bg-shape-1"></div>
+  <div class="bg-shape bg-shape-2"></div>
+  
+  <header>
+    <div class="header-content">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
+      <div>
+        <h1>b-Med Reference Hub</h1>
+        <p class="subtitulo">Mapeamento de referências biomédicas avançado</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="glass-container">
+    <nav class="abas" role="tablist">
+      <button class="aba ativa" data-aba="doi" role="tab">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+        DOI
+      </button>
+      <button class="aba" data-aba="pmid" role="tab">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        PMID
+      </button>
+      <button class="aba" data-aba="titulo" role="tab">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        Título
+      </button>
+      <button class="aba" data-aba="pdf" role="tab">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+        PDF
+      </button>
+    </nav>
+
+    <div class="paineis-wrapper">
+      <section class="painel ativo" data-painel="doi">
+        <label for="input-doi">Informe o DOI do artigo</label>
+        <div class="linha">
+          <input id="input-doi" type="text" placeholder="Ex: 10.1016/S0140-6736(23)00123-4" />
+          <button class="primario" data-acao="buscar-doi">Consultar DOI</button>
+        </div>
+      </section>
+
+      <section class="painel" data-painel="pmid">
+        <label for="input-pmid">Informe o PMID do artigo</label>
+        <div class="linha">
+          <input id="input-pmid" type="text" placeholder="Ex: 37812345" />
+          <button class="primario" data-acao="buscar-pmid">Consultar PMID</button>
+        </div>
+      </section>
+
+      <section class="painel" data-painel="titulo">
+        <label for="input-titulo">Busca por título (retorna os 5 mais relevantes)</label>
+        <div class="linha">
+          <input id="input-titulo" type="text" placeholder="Ex: statins cardiovascular randomized" />
+          <button class="primario" data-acao="buscar-titulo">Buscar Artigos</button>
+        </div>
+        <ul id="lista-titulo" class="lista-resultados" hidden></ul>
+      </section>
+
+      <section class="painel" data-painel="pdf">
+        <label for="input-pdf">Extração Automática de PDF (até 32 MB)</label>
+        <div class="area-upload" id="area-upload">
+          <input id="input-pdf" type="file" accept="application/pdf,.pdf" />
+          <div class="upload-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          </div>
+          <p class="dica">Arraste um PDF ou clique para selecionar</p>
+          <p class="preview" id="preview-pdf" hidden></p>
+        </div>
+        <button class="primario btn-full" data-acao="enviar-pdf" disabled>Analisar e Extrair PDF</button>
+      </section>
+
+      <div id="status" class="status" hidden></div>
+      <div id="resultado" class="resultado" hidden></div>
+    </div>
+  </main>
+
+  <footer>
+    <small>Desenvolvido para Mapeamento de Referências &bull; Dados alimentados por <a href="https://pubmed.ncbi.nlm.nih.gov/" target="_blank" rel="noopener">PubMed</a> via NCBI Entrez</small>
+  </footer>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

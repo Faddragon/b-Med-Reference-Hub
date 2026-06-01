@@ -1,0 +1,4 @@
+biopython>=1.81
+pymupdf>=1.23
+flask>=3.0
+pytest>=7.0
