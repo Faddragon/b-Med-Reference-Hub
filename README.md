@@ -1,5 +1,7 @@
 # b-Med Reference Hub 🧬
 
+![Banner b-Med Reference Hub](imagem%20github.png)
+
 ![GitHub repo size](https://img.shields.io/github/repo-size/Faddragon/b-Med-Reference-Hub)
 ![GitHub top language](https://img.shields.io/github/languages/top/Faddragon/b-Med-Reference-Hub)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
